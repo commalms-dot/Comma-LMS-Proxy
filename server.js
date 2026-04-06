@@ -6,29 +6,35 @@ const PORT = process.env.PORT || 3000;
 
 const BASE_URL = "http://192.145.237.160:5000";
 
-// --- Add CORS middleware ---
+app.use(express.json());
+
+// CORS
 app.use((req, res, next) => {
-  res.header(
-    "Access-Control-Allow-Origin",
-    "https://comma-lms-production-e61d.up.railway.app",
-  ); // frontend URL
+  res.header("Access-Control-Allow-Origin", "https://comma-lms-production-e61d.up.railway.app");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200); // handle preflight requests
-  }
+  if (req.method === "OPTIONS") return res.sendStatus(200);
   next();
 });
 
-// --- Proxy route ---
+// Proxy
 app.use("/api", async (req, res) => {
   try {
     const url = `${BASE_URL}${req.url}`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      method: req.method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: ["GET", "HEAD"].includes(req.method)
+        ? undefined
+        : JSON.stringify(req.body),
+    });
+
     const data = await response.text();
 
-    res.send(data);
+    res.status(response.status).send(data);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Proxy error" });

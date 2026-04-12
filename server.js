@@ -10,7 +10,10 @@ app.use(express.json());
 
 // CORS
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://comma-lms-production-e61d.up.railway.app");
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://comma-lms-production-e61d.up.railway.app",
+  );
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.sendStatus(200);
@@ -25,7 +28,8 @@ app.use("/api", async (req, res) => {
     const response = await fetch(url, {
       method: req.method,
       headers: {
-        "Content-Type": "application/json",
+        ...req.headers,
+        host: undefined,
       },
       body: ["GET", "HEAD"].includes(req.method)
         ? undefined
